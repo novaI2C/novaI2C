@@ -1,0 +1,98 @@
+//this project is based on calculating the speed of mooving vehicles and warn if the vehicle is over speeding//
+//you will be needed a Arduino UNO , 16*2 LCD display with I2C module , 2 lasers , 2 LDRs , connecting wires , resistors(for feedback purpose) , Capacitive touch sensor( for changing the unit of speed )//
+//fix the two lasers pointing on the two LDRs parallely and calculate the distance between both//
+//this project works on the simple principle by calculating speed through the fix distance//
+// as we know the fix distance between the lasers we can calculate the speed by (distance between the two lasers/time taken to cross between both the lasers )//
+//over all we need to calculate the time taken to cross both the lasers in the path of vehicle//
+//touch sensor is optional , touch sensor is just to change the unit between kmph to cmps//
+//the code is given below//
+//if the speed shown on the display is infinite than try changing the threeshold analog input//
+
+
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
+
+
+const int ldr1Pin = A0;
+const int ldr2Pin = A1;
+const int Touch = 9; //touch sensor
+
+
+unsigned long startTime = 0;
+unsigned long endTime = 0;
+unsigned long elapsedTime = 0;
+
+
+const float distanceBetweenLasers = 10.0; // in cm
+float speed = 0.0;
+
+
+LiquidCrystal_I2C lcd(0x27, 16, 2); 
+const float warningSpeed = 50.0; // in cm/s
+
+void setup() {
+  
+  lcd.init();
+  lcd.backlight();
+
+  // Pehla message
+  lcd.setCursor(0, 0);
+  lcd.print("Laser Speedometer");
+
+  //analog me input lege purani galti wapis nahi karni
+  pinMode(ldr1Pin, INPUT);
+  pinMode(ldr2Pin, INPUT);
+}
+
+void loop() {
+  // pehla laser toota
+  while (analogRead(ldr1Pin) > 500) {
+    
+  }
+
+  // timer chaalu
+  startTime = millis();
+
+  //dusra laser toota
+  while (analogRead(ldr2Pin) > 500) {
+    
+  }
+
+  // dusre laser tootne ka time
+  endTime = millis();
+
+  
+  elapsedTime = endTime - startTime;
+
+  //speed
+  speed = distanceBetweenLasers / (elapsedTime / 1000.0);
+
+  
+  if(digitalRead(Touch) == LOW){
+      lcd.setCursor(0, 1);
+      lcd.print("Speed: ");
+      lcd.print(speed);
+      lcd.print(" cm/s   ");
+  }
+  else {
+      lcd.setCursor(0, 1);
+      lcd.print("Speed:");
+      lcd.print(speed*5/1800);
+      lcd.print(" kmph   ");
+  }
+
+
+
+
+  
+  if (speed > warningSpeed) {
+    
+    lcd.setCursor(0, 0);
+    lcd.print("SLOW DOWN!");
+  }
+
+  
+  delay(500);
+}
+
+/////////thanks!!////////
